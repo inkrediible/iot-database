@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sensor Data Table</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      transition: background 0.3s, color 0.3s, border 0.3s;
+    }
+
+    body {
+      background: linear-gradient(to right, #dbeafe, #a7f3d0);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    body.dark {
+      background: linear-gradient(to right, #064e3b, #065f46);
+      color: #e5e7eb;
+    }
+
+    #loader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #f0fdf4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      z-index: 9999;
+    }
+
+    body.dark #loader {
+      background: #1e293b;
+    }
+
+    .leaf {
+      font-size: 40px;
+      animation: bounce 1s infinite ease-in-out;
+    }
+
+    .leaf:nth-child(2) { animation-delay: 0.2s; }
+    .leaf:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    #content {
+      display: none;
+      width: 100%;
+      max-width: 1200px;
+      background: #ffffffd9;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+
+    body.dark #content {
+      background: #1e293b;
+      box-shadow: 0 8px 24px rgba(255,255,255,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #047857;
+      margin-bottom: 20px;
+    }
+
+    body.dark h1 {
+      color: #22c55e;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    body.dark table {
+      background: #334155;
+      color: #e2e8f0;
+    }
+
+    thead {
+      background: #10b981;
+      color: white;
+    }
+
+    body.dark thead {
+      background: #059669;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    body.dark td, body.dark th {
+      border-color: #475569;
+    }
+
+    tbody tr:hover {
+      background: #f0fdf4;
+    }
+
+    body.dark tbody tr:hover {
+      background: #1e293b;
+    }
+
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    body.dark footer {
+      color: #94a3b8;
+    }
+
+    #darkToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 50px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 99999;
+    }
+
+    body.dark #darkToggle {
+      background: #059669;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dark Mode Toggle -->
+  <button id="darkToggle">🌙 Dark Mode</button>
+
+  <!-- Loading -->
+  <div id="loader">
+    <div class="leaf">🍃</div>
+    <div class="leaf">🍃</div>
+    <div class="leaf">🍃</div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="content">
+    <h1>🌿 Sensor Data Table</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Soil Moisture</th>
+          <th>Temperature</th>
+          <th>Humidity</th>
+          <th>Rain</th>
+          <th>Water Flow</th>
+          <th>Pump</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <!-- Data rows go here -->
+      </tbody>
+    </table>
+    <footer>Auto-refreshing every 3 seconds</footer>
+  </div>
+
+  <script>
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("content").style.display = "block";
+      }, 1500);
+    });
+
+    async function loadTableData() {
+      try {
+        const response = await fetch("http://localhost:5000/api/all"); // Replace if needed
+        const data = await response.json();
+
+        const tbody = document.getElementById("table-body");
+        tbody.innerHTML = "";
+
+        data.forEach(entry => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${new Date(entry.timestamp).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
+            <td>${entry.soil_moisture}%</td>
+            <td>${entry.temperature}°C</td>
+            <td>${entry.humidity}%</td>
+            <td>${entry.rain_detected}</td>
+            <td>${entry.water_flow} L/min</td>
+            <td>${entry.pump_status}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error("Failed to load data:", err);
+      }
+    }
+
+    loadTableData();
+    setInterval(loadTableData, 3000);
+
+    // Dark Mode toggle logic
+    const toggleBtn = document.getElementById("darkToggle");
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      toggleBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light Mode" : "🌙 Dark Mode";
+    });
+  </script>
+
+</body>
+</html>
