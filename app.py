@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify #this file is only checking if website is taking test data 
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson import ObjectId
@@ -9,11 +9,11 @@ app = Flask(__name__)
 CORS(app)
 
 # MongoDB connection
-client = MongoClient("mongodb://localhost:27017/")  # Update if using Atlas or a different port
+client = MongoClient("mongodb://localhost:27017/")  # Update if on different port
 db = client["iot_db"]  # Replace with your DB name
 collection = db["sensor_data"]  # Replace with your collection name
 
-# Helper to convert ObjectId and timestamp
+# timestamp to ist yay
 def convert(doc):
     ist = pytz.timezone('Asia/Kolkata')
     return {
