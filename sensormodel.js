@@ -1,4 +1,4 @@
-onst mongoose = require("mongoose");
+const mongoose = require("mongoose");
 
 const sensorSchema = new mongoose.Schema({
   soil_moisture: Number,
